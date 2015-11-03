@@ -29,4 +29,50 @@
  * along with Nome - Programma.If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include "ZimbraAuthenticator.h"
+
+using namespace std;
+
+namespace askeeper {
+namespace server {
+
+HTTPResponse::HTTPStatus ZimbraAuthenticator::authenticate(const string& username, const string& password)
+{
+    HTTPResponse::HTTPStatus status = HTTPResponse::HTTP_OK;
+    Application& app = Application::instance();
+    Context::Ptr pClientContext = new Context(Context::CLIENT_USE, "", "", "", Context::VERIFY_NONE);
+
+    try {
+
+        HTTPSClientSession s(app.config().getString("zimbra.host"), (unsigned int)app.config().getInt("zimbra.port"), pClientContext);
+        std::string baseUrl = app.config().getString("zimbra.url");
+        string url(replace(baseUrl, "$username$", username.c_str()));
+        cout << "Zimbra auth url: " << url << endl;
+
+        HTTPRequest request(HTTPRequest::HTTP_GET, url);
+        Poco::Net::HTTPBasicCredentials creds(username, password);
+
+
+        HTTPResponse zimbraResponse;
+        cout << "Set Zimbra credentials in request" << endl;
+        creds.authenticate(request);
+        s.sendRequest(request);
+        std::istream& rs = s.receiveResponse(zimbraResponse);
+        cout << "Zimbra authentication response status: " << zimbraResponse.getStatus() << endl;
+
+        status = zimbraResponse.getStatus();
+//        HTTPResponse::HTTPStatus zimbraAuthStatus = zimbraResponse.getStatus();
+//        if (zimbraAuthStatus == HTTPResponse::HTTP_UNAUTHORIZED || zimbraAuthStatus == HTTPResponse::HTTP_NOT_FOUND) {
+//            status = HTTPResponse::HTTP_UNAUTHORIZED;
+//        }
+    } catch (Poco::Exception& e) {
+        std::cerr << "Exception: " << e.what() << " - " << e.message() << std::endl;
+        status = HTTPResponse::HTTP_UNAUTHORIZED;
+    }
+
+    return status;
+}
+
+}
+}

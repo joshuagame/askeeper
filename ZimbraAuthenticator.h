@@ -32,10 +32,33 @@
 #ifndef ASKEEPER_ZIMBRAAUTHENTICATOR_H
 #define ASKEEPER_ZIMBRAAUTHENTICATOR_H
 
+#include "Poco/Net/HTTPResponse.h"
+#include "Poco/Net/Context.h"
+#include "Poco/Net/HTTPSClientSession.h"
+#include "Poco/Net/HTTPRequest.h"
+#include "Poco/Net/HTTPBasicCredentials.h"
+#include "Poco/Util/Application.h"
+#include "Poco/String.h"
+
+using Poco::Net::HTTPResponse;
+using Poco::Net::Context;
+using Poco::Net::HTTPSClientSession;
+using Poco::Net::HTTPRequest;
+using Poco::Net::HTTPBasicCredentials;
+using Poco::Util::Application;
+using Poco::replace;
+
+namespace askeeper {
+namespace server {
 
 class ZimbraAuthenticator {
-
+public:
+    ZimbraAuthenticator() {}
+    HTTPResponse::HTTPStatus authenticate(const std::string& username, const std::string& password);
 };
+
+}
+}
 
 
 #endif //ASKEEPER_ZIMBRAAUTHENTICATOR_H

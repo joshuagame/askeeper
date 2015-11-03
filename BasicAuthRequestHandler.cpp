@@ -37,8 +37,10 @@
 #include "Poco/Net/HTTPCredentials.h"
 #include "Poco/Net/SSLManager.h"
 #include "Poco/String.h"
+#include "ZimbraAuthenticator.h"
 
 using Poco::replace;
+using Poco::Net::HTTPResponse;
 
 namespace askeeper {
 namespace server {
@@ -56,33 +58,16 @@ void BasicAuthRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServ
         std::cout << "Username: " << user << std::endl;
         std::cout << "Password: " << pwd << std::endl;
 
-        // call Zimbra
-        Context::Ptr pClientContext = new Context(Context::CLIENT_USE, "", "", "", Context::VERIFY_NONE);
-        try {
+        ZimbraAuthenticator zimbraAuthenticator;
+        HTTPResponse::HTTPStatus status = zimbraAuthenticator.authenticate(user, pwd);
 
-            HTTPSClientSession s(app.config().getString("zimbra.host"), (unsigned int)app.config().getInt("zimbra.port"), pClientContext);
-            string baseUrl = app.config().getString("zimbra.url");
-            string url(replace(baseUrl, "$username$", user.c_str()));
-            cout << "Zimbra auth url: " << url << endl;
-            HTTPRequest request(HTTPRequest::HTTP_GET, url);
-            Poco::Net::HTTPBasicCredentials creds(user, pwd);
-
-
-            HTTPResponse response;
-            cout << "Set Zimbra credentials in request" << endl;
-            creds.authenticate(request);
-            s.sendRequest(request);
-            std::istream& rs = s.receiveResponse(response);
-            cout << "Zimbra authentication response status: " << response.getStatus() << endl;
-
-            pClientContext->release();
-        } catch (Poco::Exception& e) {
-            std::cerr << "Exception: " << e.what() << " - " << e.message() << std::endl;
-            pClientContext->release();
+        if (status != HTTPResponse::HTTP_OK) {
+            cout << "*** Authentication Required ***" << endl;
+            response.requireAuthentication("askeeper");
+            response.setContentLength(0);
+            response.send();
+            return;
         }
-
-
-
     } else {
         response.requireAuthentication("askeeper");
         response.setContentLength(0);
