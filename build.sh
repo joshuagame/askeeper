@@ -12,3 +12,6 @@ rm -rf dist
 mkdir dist
 cp build/askeeper* dist
 cp /usr/local/bin/cygmicrohttpd-10.dll dist
+
+cp ./conf/*.properties dist
+cp ./conf/*.pem dist

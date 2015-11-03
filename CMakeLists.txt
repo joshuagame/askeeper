@@ -1,19 +1,25 @@
 cmake_minimum_required(VERSION 3.3)
 project(askeeper)
 
-# Add local CMake module paths
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-# compiler flags
+# define the project
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-# source code
-set(SOURCE_FILES main.cpp)
-
-# include directories
-include(FindPoco)
-INCLUDE_DIRECTORIES(${Poco_INCLUDE_DIRS})
-
-# libraries and target
+set(SOURCE_FILES main.cpp ASKServer.cpp ASKServer.h RequestHandlerFactory.cpp RequestHandlerFactory.h BasicAuthRequestHandler.cpp BasicAuthRequestHandler.h ZimbraAuthenticator.cpp ZimbraAuthenticator.h)
 add_executable(askeeper ${SOURCE_FILES})
-TARGET_LINK_LIBRARIES(askeeper ${Poco_LIBRARIES})
+
+# set the POCO paths and libs
+set(POCO_PREFIX      "/usr/local") # the directory containing "include" and "lib"
+set(POCO_INCLUDE_DIR "${POCO_PREFIX}/include")
+set(POCO_LIB_DIR     "${POCO_PREFIX}/lib")
+set(POCO_LIBS        "${POCO_LIB_DIR}/libPocoNet.dll.a"
+                     "${POCO_LIB_DIR}/libPocoNetSSL.dll.a"
+                     "${POCO_LIB_DIR}/libPocoUtil.dll.a"
+                     "${POCO_LIB_DIR}/libPocoJSON.dll.a"
+                     "${POCO_LIB_DIR}/libPocoXML.dll.a"
+                     "${POCO_LIB_DIR}/libPocoFoundation.dll.a"
+                     "pthread")
+
+# set the include path for the app
+target_include_directories(askeeper PRIVATE "${POCO_INCLUDE_DIR}")
+# link the app against POCO
+target_link_libraries(askeeper "${POCO_LIBS}")
