@@ -36,7 +36,7 @@
 #include "Poco/Net/HTTPServerRequest.h"
 #include "Poco/Net/HTTPRequestHandler.h"
 #include "Poco/Net/HTTPRequestHandlerFactory.h"
-#include "BasicAuthRequestHandler.h"
+#include "SiginRequestHandler.h"
 
 using namespace std;
 using namespace Poco::Net;
@@ -56,10 +56,19 @@ public:
 
 inline HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(const HTTPServerRequest& request)
 {
-    if (request.getURI() == "/")
-        return new BasicAuthRequestHandler();
-    else
+    if (request.getURI() == "/signin") {
+        if (request.getMethod().compare(HTTPServerRequest::HTTP_GET) == 0) {
+            cout << "is a GET" << endl;
+        } else if (request.getMethod().compare(HTTPServerRequest::HTTP_POST) == 0) {
+            cout << "is a POST" << endl;
+        } else {
+            cout << "unknown method" << endl;
+        }
+
+        return new SiginRequestHandler();
+    } else {
         return 0;
+    }
 }
 
 }

@@ -30,7 +30,7 @@
  */
 
 #include <iterator>
-#include "BasicAuthRequestHandler.h"
+#include "SiginRequestHandler.h"
 #include "Poco/URI.h"
 #include "Poco/Net/HTTPClientSession.h"
 #include "Poco/Net/HTTPSClientSession.h"
@@ -48,18 +48,15 @@ using Poco::Net::HTTPResponse;
 namespace askeeper {
 namespace server {
 
-void BasicAuthRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
+void SiginRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
 {
     std::string username;
     std::string password;
-//    Application& app = Application::instance();
     Logger& logger = Application::instance().logger();
 
     logger.information("Request from " + request.clientAddress().toString());
-//    logger->information("Request from " + request.clientAddress().toString());
 
     Session session = SessionsManager::instance().newSession();
-//    cout << "## Session created with Session ID: " << session.id() << endl;
     logger.debug("Session created with Session ID: " + session.id());
 
     Session theSession = SessionsManager::instance().getSession(session.id());
@@ -67,8 +64,6 @@ void BasicAuthRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServ
 
     if (request.hasCredentials()) {
         Poco::Net::HTTPBasicCredentials cred(request);
-//        const std::string& user = cred.getUsername();
-//        const std::string& pwd = cred.getPassword();
         username = cred.getUsername();
         password = cred.getPassword();
         logger.debug("Basic Credentials: [username: " + username + ", password: " + password + "]");

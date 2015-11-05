@@ -46,9 +46,9 @@ using namespace Poco::Util;
 namespace askeeper {
 namespace server {
 
-class BasicAuthRequestHandler : public HTTPRequestHandler {
+class SiginRequestHandler : public HTTPRequestHandler {
 public:
-    BasicAuthRequestHandler()
+    SiginRequestHandler()
     {
         Application::instance().logger().debug("Basic Authentication request handler started for a request");
     }
