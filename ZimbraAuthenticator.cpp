@@ -55,31 +55,36 @@ namespace server {
 
 HTTPResponse::HTTPStatus ZimbraAuthenticator::authenticate(const string& username, const string& password)
 {
+    Poco::Logger& logger = Application::instance().logger();
     HTTPResponse::HTTPStatus status = HTTPResponse::HTTP_OK;
     Application& app = Application::instance();
     Context::Ptr pClientContext = new Context(Context::CLIENT_USE, "", "", "", Context::VERIFY_NONE);
 
+    logger.information("performing Zimbra user authentication for user " + username);
     try {
 
         HTTPSClientSession s(app.config().getString("zimbra.host"), (unsigned int)app.config().getInt("zimbra.port"), pClientContext);
         std::string baseUrl = app.config().getString("zimbra.url");
         string url(replace(baseUrl, "$username$", username.c_str()));
-        cout << "Zimbra auth url: " << url << endl;
+        logger.debug("Zimbra authentication url: " + url);
+
 
         HTTPRequest request(HTTPRequest::HTTP_GET, url);
         Poco::Net::HTTPBasicCredentials creds(username, password);
 
 
         HTTPResponse zimbraResponse;
-        cout << "Set Zimbra credentials in request" << endl;
+        logger.debug("setting Zimbra credentials in request");
         creds.authenticate(request);
+
+        logger.debug("sending authentication request to Zimbra");
         s.sendRequest(request);
         std::istream& rs = s.receiveResponse(zimbraResponse);
-        cout << "Zimbra authentication response status: " << zimbraResponse.getStatus() << endl;
+        logger.debug("Zimbra authentication response status: " + zimbraResponse.getStatus());
 
         status = zimbraResponse.getStatus();
     } catch (Poco::Exception& e) {
-        std::cerr << "Exception: " << e.what() << " - " << e.message() << std::endl;
+        logger.error("Exception: %s - %s", e.what(), e.message());
         status = HTTPResponse::HTTP_UNAUTHORIZED;
     }
 

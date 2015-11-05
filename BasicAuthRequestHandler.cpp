@@ -36,7 +36,7 @@
 #include "Poco/Net/HTTPSClientSession.h"
 #include "Poco/Net/HTTPCredentials.h"
 #include "Poco/Net/SSLManager.h"
-#include "Poco/String.h"
+#include "Poco/Logger.h"
 #include "ZimbraAuthenticator.h"
 #include "ASKServer.h"
 #include "SessionsManager.h"
@@ -50,40 +50,50 @@ namespace server {
 
 void BasicAuthRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
 {
-    Application& app = Application::instance();
-    app.logger().information("Request from " + request.clientAddress().toString());
+    std::string username;
+    std::string password;
+//    Application& app = Application::instance();
+    Logger& logger = Application::instance().logger();
+
+    logger.information("Request from " + request.clientAddress().toString());
 //    logger->information("Request from " + request.clientAddress().toString());
 
     Session session = SessionsManager::instance().newSession();
 //    cout << "## Session created with Session ID: " << session.id() << endl;
-    app.logger().information("Session created with Session ID: " + session.id());
+    logger.debug("Session created with Session ID: " + session.id());
 
     Session theSession = SessionsManager::instance().getSession(session.id());
-    app.logger().information("Session emplaced into the Sessions Map");
+    logger.debug("Session emplaced into the Sessions Map");
 
     if (request.hasCredentials()) {
         Poco::Net::HTTPBasicCredentials cred(request);
-        const std::string& user = cred.getUsername();
-        const std::string& pwd = cred.getPassword();
-        app.logger().information("Basic Credentials: { Username: " + user + ", Password: " + pwd + " }");
+//        const std::string& user = cred.getUsername();
+//        const std::string& pwd = cred.getPassword();
+        username = cred.getUsername();
+        password = cred.getPassword();
+        logger.debug("Basic Credentials: [username: " + username + ", password: " + password + "]");
 
         ZimbraAuthenticator zimbraAuthenticator;
-        HTTPResponse::HTTPStatus status = zimbraAuthenticator.authenticate(user, pwd);
+        HTTPResponse::HTTPStatus status = zimbraAuthenticator.authenticate(username, password);
 
         if (status != HTTPResponse::HTTP_OK) {
-            app.logger().information("AUTHENTICATTION REQUIRED");
+            logger.warning("user " + username + " unauthorized for request from " + request.clientAddress().toString());
             response.requireAuthentication("askeeper");
             response.setContentLength(0);
             response.send();
             return;
         }
     } else {
+        logger.warning("no user credentials, so ask for authentication");
         response.requireAuthentication("askeeper");
         response.setContentLength(0);
         response.send();
         return;
     }
 
+
+    logger.information("user " + username + " authenticated for request from " + request.clientAddress().toString());
+    logger.information("session id for user " + username + " session is " + session.id());
 
     response.setChunkedTransferEncoding(true);
     response.setContentType("application/json");

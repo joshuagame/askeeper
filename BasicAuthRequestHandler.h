@@ -50,15 +50,12 @@ class BasicAuthRequestHandler : public HTTPRequestHandler {
 public:
     BasicAuthRequestHandler()
     {
-        cout << "Basic Authentication request handler" << endl;
-//        Application& app = Application::instance();
-//        logger = &app.logger();
+        Application::instance().logger().debug("Basic Authentication request handler started for a request");
     }
 
     void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response);
 
 private:
-//    Poco::Logger* logger;
 };
 
 }
