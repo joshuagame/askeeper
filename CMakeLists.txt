@@ -4,7 +4,7 @@ project(askeeper)
 # define the project
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(SOURCE_FILES main.cpp ASKServer.cpp ASKServer.h RequestHandlerFactory.cpp RequestHandlerFactory.h SiginRequestHandler.cpp SiginRequestHandler.h ZimbraAuthenticator.cpp ZimbraAuthenticator.h SessionsManager.cpp SessionsManager.h Session.cpp Session.h)
+set(SOURCE_FILES main.cpp ASKServer.cpp ASKServer.h RequestHandlerFactory.cpp RequestHandlerFactory.h SiginRequestHandler.cpp SiginRequestHandler.h ZimbraAuthenticator.cpp ZimbraAuthenticator.h SessionsManager.cpp SessionsManager.h Session.cpp Session.h SessionCookieManager.cpp SessionCookieManager.h)
 add_executable(askeeper ${SOURCE_FILES})
 
 # set the POCO paths and libs

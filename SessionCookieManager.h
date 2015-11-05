@@ -10,7 +10,7 @@
  * Copyright (C) 2015, Luca Stasio - joshuagame@gmail.com
  * //The CodeGazoline Team/
  *
- * SessionManager.h
+ * SessionCookieManager.h
  * the http GET Basic authentication request handler
  *
  * This file is part of the ASKEEPER Server.
@@ -29,59 +29,56 @@
  * along with Nome - Programma.If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ASKEEPER_SESSIONSMANAGER_H
-#define ASKEEPER_SESSIONSMANAGER_H
+#ifndef ASKEEPER_SESSIONCOOKIECHECKER_H
+#define ASKEEPER_SESSIONCOOKIECHECKER_H
 
-#include <iostream>
 #include <string>
-#include <functional>
-#include <exception>
-#include <unordered_map>
-#include "Poco/UUID.h"
-#include "Poco/UUIDGenerator.h"
-#include "Poco/MD5Engine.h"
-#include "Session.h"
+#include "Poco/Net/HTTPServerRequest.h"
+#include "Poco/Net/HTTPServerResponse.h"
+#include "Poco/Net/HTTPCookie.h"
 
-using Poco::UUID;
-using Poco::UUIDGenerator;
-using Poco::MD5Engine;
-
-// NOTE:
-// ---> http://silviuardelean.ro/2012/06/05/few-singleton-approaches/
-// http://stackoverflow.com/questions/1008019/c-singleton-design-pattern
-// http://stackoverflow.com/questions/270947/can-any-one-provide-me-a-sample-of-singleton-in-c/271104#271104
+using namespace Poco::Net;
 
 namespace askeeper {
 namespace server {
 
-class SessionsManager {
-    SessionsManager() = delete;
-    SessionsManager(SessionsManager&) = delete;
-    void operator=(SessionsManager&) = delete;
-
+class SessionCookieManager {
 public:
-    static SessionsManager& instance()
-    {
-        static SessionsManager* _instance{};
-        return *_instance;
-    }
+    std::string getSessionIdFromCookie(HTTPServerRequest& request);
+    void setSessionCookie(HTTPServerResponse& response, const std::string& sessionId);
 
-    Session newSession();
-
-    Session getSession(const std::string& sessionId)
-    {
-        return sessions[sessionId];
-    }
-
-private:
-    ~SessionsManager() {}
-    static std::unordered_map<std::string, Session> sessions;
+protected:
+    static const std::string SESSION_COOKIE_NAME;
+    static const std::string NOID;
 
 };
 
+inline std::string SessionCookieManager::getSessionIdFromCookie(HTTPServerRequest& request)
+{
+    std::string sessionId = NOID;
+    NameValueCollection cookies;
+
+    // get cookies from request
+    request.getCookies(cookies);
+
+    // and search for ASKSESSION cookie to grab the sessionId
+    Poco::Net::NameValueCollection::ConstIterator it = cookies.find(SESSION_COOKIE_NAME);
+    if (it != cookies.end()) {
+        sessionId = it->second;
+    }
+
+    return sessionId;
+}
+
+inline void SessionCookieManager::setSessionCookie(HTTPServerResponse& response, const std::string& sessionId)
+{
+    HTTPCookie cookie(SESSION_COOKIE_NAME, sessionId);
+    cookie.setPath("/");
+    cookie.setMaxAge(3600); // 1 hour
+    response.addCookie(cookie);
+}
 
 }
 }
 
-
-#endif //ASKEEPER_SESSIONSMANAGER_H
+#endif //ASKEEPER_SESSIONCOOKIECHECKER_H

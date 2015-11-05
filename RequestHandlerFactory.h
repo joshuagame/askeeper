@@ -36,6 +36,7 @@
 #include "Poco/Net/HTTPServerRequest.h"
 #include "Poco/Net/HTTPRequestHandler.h"
 #include "Poco/Net/HTTPRequestHandlerFactory.h"
+#include "Poco/Net/NameValueCollection.h"
 #include "SiginRequestHandler.h"
 
 using namespace std;
@@ -52,20 +53,26 @@ public:
     }
 
     HTTPRequestHandler* createRequestHandler(const HTTPServerRequest& request);
+
+private:
+    static const std::string SIGNIN_PATH;
+    static const std::string SIGNOUT_PATH;
+
 };
 
 inline HTTPRequestHandler* RequestHandlerFactory::createRequestHandler(const HTTPServerRequest& request)
 {
-    if (request.getURI() == "/signin") {
-        if (request.getMethod().compare(HTTPServerRequest::HTTP_GET) == 0) {
-            cout << "is a GET" << endl;
-        } else if (request.getMethod().compare(HTTPServerRequest::HTTP_POST) == 0) {
-            cout << "is a POST" << endl;
-        } else {
-            cout << "unknown method" << endl;
-        }
+    if (request.getURI() == SIGNIN_PATH) {
 
         return new SiginRequestHandler();
+//        TODO: move this code into SigninRequestHandler
+//        if (request.getMethod() == HTTPServerRequest::HTTP_GET) {
+//            return new SiginRequestHandler();
+//        } else if (request.getMethod() == HTTPServerRequest::HTTP_POST) {
+//            return new SiginRequestHandler();
+//        } else {
+//            cout << "unknown method" << endl;
+//        }
     } else {
         return 0;
     }

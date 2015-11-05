@@ -48,6 +48,7 @@ using Poco::Net::HTTPResponse;
 namespace askeeper {
 namespace server {
 
+// TODO: ******* REWRITE THIS CODE, PLEASE!!!! *******
 void SiginRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response)
 {
     std::string username;
@@ -56,11 +57,35 @@ void SiginRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerRe
 
     logger.information("Request from " + request.clientAddress().toString());
 
-    Session session = SessionsManager::instance().newSession();
-    logger.debug("Session created with Session ID: " + session.id());
+    //
+    // COOKIE AND SESSIONID CHECKS
+    //
+    // check for sessionId from cookie in request
+    std::string sessionId = getSessionIdFromCookie(request);
+    if (sessionId == NOID) {
+        logger.information("no sessionId from request: probably there is no ASKSESSION cookie in request");
+    } else {
+        // now check for the sessionId in the sessions map
+        Session theSession = SessionsManager::instance().getSession(sessionId);
+        if (sessionId == theSession.id()) {
+            logger.debug("found an active session for sessionId " + sessionId);
+        } else {
+            logger.warning("no active session for sessionId " + sessionId + ", so ask for authentication");
+            response.requireAuthentication("askeeper");
+            response.setContentLength(0);
+            response.send();
+            return;
+        }
+        response.setChunkedTransferEncoding(true);
+        response.setContentType("application/json");
+        std::ostream& ostr = response.send();
+        ostr << "{ \"status\": \"success\", \"message\": \"user authenticated by sessionId in ASKSESSION cookie\" }";
+        return;
+    }
 
-    Session theSession = SessionsManager::instance().getSession(session.id());
-    logger.debug("Session emplaced into the Sessions Map");
+    //
+    // AUTHENTICATION
+    //
 
     if (request.hasCredentials()) {
         Poco::Net::HTTPBasicCredentials cred(request);
@@ -86,12 +111,20 @@ void SiginRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerRe
         return;
     }
 
+    //
+    // AUTHENTICATION OK. SESSION START.
+    //
+
+    // user has been authenticated. So, start a new session and send the response
+    Session session = SessionsManager::instance().newSession();
+    logger.debug("Session created with Session ID: " + session.id());
 
     logger.information("user " + username + " authenticated for request from " + request.clientAddress().toString());
     logger.information("session id for user " + username + " session is " + session.id());
 
     response.setChunkedTransferEncoding(true);
     response.setContentType("application/json");
+    setSessionCookie(response, session.id());
 
     std::ostream& ostr = response.send();
     ostr << "{ \"status\": \"success\", \"message\": \"user authenticated\" }";

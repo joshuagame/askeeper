@@ -10,8 +10,8 @@
  * Copyright (C) 2015, Luca Stasio - joshuagame@gmail.com
  * //The CodeGazoline Team/
  *
- * RequestHandlerFactory.cpp
- * Request handler factory for the server. This is the requests url router.
+ * SessionCookieManager.cpp
+ * the http GET Basic authentication request handler
  *
  * This file is part of the ASKEEPER Server.
  *
@@ -29,14 +29,13 @@
  * along with Nome - Programma.If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "RequestHandlerFactory.h"
+#include "SessionCookieManager.h"
 
 namespace askeeper {
 namespace server {
 
-const std::string RequestHandlerFactory::SIGNIN_PATH = "/signin";
-const std::string RequestHandlerFactory::SIGNOUT_PATH= "/signout";
+const std::string SessionCookieManager::SESSION_COOKIE_NAME = "ASKSESSION";
+const std::string SessionCookieManager::NOID = "NOID";
 
 }
 }
-

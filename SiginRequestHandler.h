@@ -38,6 +38,7 @@
 #include "Poco/Net/HTTPServerResponse.h"
 #include "Poco/Net/HTTPBasicCredentials.h"
 #include "Poco/Util/Application.h"
+#include "SessionCookieManager.h"
 
 using namespace std;
 using namespace Poco::Net;
@@ -46,7 +47,7 @@ using namespace Poco::Util;
 namespace askeeper {
 namespace server {
 
-class SiginRequestHandler : public HTTPRequestHandler {
+class SiginRequestHandler : public HTTPRequestHandler, SessionCookieManager {
 public:
     SiginRequestHandler()
     {
