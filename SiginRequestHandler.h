@@ -10,7 +10,7 @@
  * Copyright (C) 2015, Luca Stasio - joshuagame@gmail.com
  * //The CodeGazoline Team/
  *
- * BasicAuthRequestHandler.h
+ * SiginRequestHandler.h
  * the http GET Basic authentication request handler
  *
  * This file is part of the ASKEEPER Server.
