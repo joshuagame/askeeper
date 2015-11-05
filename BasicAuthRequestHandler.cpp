@@ -38,6 +38,9 @@
 #include "Poco/Net/SSLManager.h"
 #include "Poco/String.h"
 #include "ZimbraAuthenticator.h"
+#include "ASKServer.h"
+#include "SessionsManager.h"
+#include "Session.h"
 
 using Poco::replace;
 using Poco::Net::HTTPResponse;
@@ -49,20 +52,26 @@ void BasicAuthRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServ
 {
     Application& app = Application::instance();
     app.logger().information("Request from " + request.clientAddress().toString());
+//    logger->information("Request from " + request.clientAddress().toString());
+
+    Session session = SessionsManager::instance().newSession();
+//    cout << "## Session created with Session ID: " << session.id() << endl;
+    app.logger().information("Session created with Session ID: " + session.id());
+
+    Session theSession = SessionsManager::instance().getSession(session.id());
+    app.logger().information("Session emplaced into the Sessions Map");
 
     if (request.hasCredentials()) {
         Poco::Net::HTTPBasicCredentials cred(request);
         const std::string& user = cred.getUsername();
         const std::string& pwd = cred.getPassword();
-        std::cout << "Request Basic Credentials" << std::endl;
-        std::cout << "Username: " << user << std::endl;
-        std::cout << "Password: " << pwd << std::endl;
+        app.logger().information("Basic Credentials: { Username: " + user + ", Password: " + pwd + " }");
 
         ZimbraAuthenticator zimbraAuthenticator;
         HTTPResponse::HTTPStatus status = zimbraAuthenticator.authenticate(user, pwd);
 
         if (status != HTTPResponse::HTTP_OK) {
-            cout << "*** Authentication Required ***" << endl;
+            app.logger().information("AUTHENTICATTION REQUIRED");
             response.requireAuthentication("askeeper");
             response.setContentLength(0);
             response.send();
@@ -74,6 +83,7 @@ void BasicAuthRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServ
         response.send();
         return;
     }
+
 
     response.setChunkedTransferEncoding(true);
     response.setContentType("application/json");

@@ -50,12 +50,11 @@ namespace server {
 class ASKServer : public ServerApplication {
 public:
     ASKServer() : requiredHelp(false)
-    { }
-
-    ~ASKServer()
     {
-        uninitializeSSL();
+        showLogo();
     }
+
+    ~ASKServer();
 
 protected:
     void initialize(Application& app);
@@ -66,6 +65,7 @@ protected:
     int main(const std::vector<std::string>& args);
 
 private:
+    void showLogo();
     bool requiredHelp;
 
 };
@@ -74,12 +74,22 @@ private:
 
 inline void ASKServer::initialize(Application& app)
 {
-    loadConfiguration(); // load default configuration files, if present
-    ServerApplication::initialize(app);
+    std::cout << "loading configuration... " << std::endl;
+    loadConfiguration();
+    std::cout << "configuration correctly loaded" << std::endl;
+    std::cout << "logging is enabled" << std::endl;
 
+    logger().information("initializing server app");
+    ServerApplication::initialize(app);
+    logger().information("server app initialized");
+
+    logger().information("checking for HTTPS");
     if (config().getBool("ASKServer.ssl")) {
+        logger().information("HTTPS enabled");
         initializeSSL();
-        cout << "HTTPS initialized" << std::endl;
+        logger().information("HTTPS initialized");
+    } else {
+        logger().information("HTTPS non enabled by config");
     }
 }
 
@@ -113,6 +123,18 @@ inline void ASKServer::displayHelp()
     helpFormatter.setUsage("OPTIONS");
     helpFormatter.setHeader("ASKEEPER v1.0\nAuthentication Sessions Keeper Server");
     helpFormatter.format(std::cout);
+}
+
+inline void ASKServer::showLogo()
+{
+    std::cout << "======================================================" << std::endl;
+    std::cout << "     _    ____  _  _______ _____ ____  _____ ____" << std::endl;
+    std::cout << "    / \\  / ___|| |/ / ____| ____|  _ \\| ____|  _ \\" << std::endl;
+    std::cout << "   / _ \\ \\___ \\| ' /|  _| |  _| | |_) |  _| | |_) |" << std::endl;
+    std::cout << "  / ___ \\ ___) | . \\| |___| |___|  __/| |___|  _ <" << std::endl;
+    std::cout << " /_/   \\_\\____/|_|\\_\\_____|_____|_|   |_____|_| \\_\\" << std::endl;
+    std::cout << " Authentication Sessions Keeper Server       (v1.0)" << std::endl;
+    std::cout << "======================================================" << std::endl;
 }
 
 }

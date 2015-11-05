@@ -48,7 +48,7 @@ class RequestHandlerFactory : public HTTPRequestHandlerFactory {
 public:
     RequestHandlerFactory()
     {
-        cout << "ASK Server Request Handler Factory initialized" << endl;
+        Application::instance().logger().information("Request Handler Factory initialized");
     }
 
     HTTPRequestHandler* createRequestHandler(const HTTPServerRequest& request);

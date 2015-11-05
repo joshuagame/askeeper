@@ -37,6 +37,22 @@ using namespace std;
 namespace askeeper {
 namespace server {
 
+
+/*
+ * NOTE:
+ *  Using Session Factory:
+ *
+ *  //register http and https
+    HTTPSessionFactory::defaultFactory().registerProtocol("http", new HTTPSessionInstantiator);
+    HTTPSessionFactory::defaultFactory().registerProtocol("https", new HTTPSSessionInstantiator);
+    //prepare for SSLManager
+    SharedPtr ptrCert = new AcceptCertificateHandler(false);
+    const Poco::Net::Context::Ptr context = new Context(Context::CLIENT_USE, "", "", "", Context::VERIFY_NONE, 9, false, "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
+    SSLManager::instance().initializeClient(0, ptrCert, context);
+    // now you have the HTTP(S)ClientSession
+    HTTPClientSession *session = HTTPSessionFactory::defaultFactory().createClientSession(uri);
+ */
+
 HTTPResponse::HTTPStatus ZimbraAuthenticator::authenticate(const string& username, const string& password)
 {
     HTTPResponse::HTTPStatus status = HTTPResponse::HTTP_OK;
@@ -62,10 +78,6 @@ HTTPResponse::HTTPStatus ZimbraAuthenticator::authenticate(const string& usernam
         cout << "Zimbra authentication response status: " << zimbraResponse.getStatus() << endl;
 
         status = zimbraResponse.getStatus();
-//        HTTPResponse::HTTPStatus zimbraAuthStatus = zimbraResponse.getStatus();
-//        if (zimbraAuthStatus == HTTPResponse::HTTP_UNAUTHORIZED || zimbraAuthStatus == HTTPResponse::HTTP_NOT_FOUND) {
-//            status = HTTPResponse::HTTP_UNAUTHORIZED;
-//        }
     } catch (Poco::Exception& e) {
         std::cerr << "Exception: " << e.what() << " - " << e.message() << std::endl;
         status = HTTPResponse::HTTP_UNAUTHORIZED;

@@ -51,9 +51,14 @@ public:
     BasicAuthRequestHandler()
     {
         cout << "Basic Authentication request handler" << endl;
+//        Application& app = Application::instance();
+//        logger = &app.logger();
     }
 
     void handleRequest(HTTPServerRequest& request, HTTPServerResponse& response);
+
+private:
+//    Poco::Logger* logger;
 };
 
 }

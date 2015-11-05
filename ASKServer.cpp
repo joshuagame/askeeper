@@ -37,12 +37,13 @@ namespace server {
 
 int ASKServer::main(const std::vector<std::string>& args)
 {
+    logger().information("starting server app main");
     if (requiredHelp) {
         displayHelp();
     } else {
         // get parameters from configuration file
         unsigned short port = (unsigned short)config().getInt("ASKServer.port", 8765);
-        std::cout << "Starting on port " << port << std::endl;
+        logger().information("starting server on port " + config().getString("ASKServer.port"));
 
         // set-up a server socket
         SecureServerSocket svs(port);
@@ -53,13 +54,20 @@ int ASKServer::main(const std::vector<std::string>& args)
         // wait for CTRL-C or kill
         waitForTerminationRequest();
 
-        std::cout << "a-keeper server shutting down" << std::endl;
+        logger().information("server is shutting down");
         // Stop the HTTPServer
         srv.stop();
+        logger().information("server is down... Bye!");
     }
 
     return Application::EXIT_OK;
 }
+
+ASKServer::~ASKServer()
+{
+    uninitializeSSL();
+}
+
 
 }
 }

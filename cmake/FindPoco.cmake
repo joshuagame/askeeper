@@ -49,10 +49,9 @@
 
 #set(ENV{Poco_DIR} C:/Users/Luca/Downloads/Libs/C++/POCO/poco-1.6.1-all)
 
-set(ENV{Poco_DIR} /usr)
+set(ENV{Poco_DIR} /usr/local)
 
 set(Poco_HINTS
-        /usr
         /usr/local
         C:/AppliedInformatics
         ${Poco_DIR}
