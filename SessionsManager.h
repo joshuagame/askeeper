@@ -40,6 +40,8 @@
 #include "Poco/UUID.h"
 #include "Poco/UUIDGenerator.h"
 #include "Poco/MD5Engine.h"
+#include "Poco/UniqueExpireCache.h"
+#include "Poco/ExpirationDecorator.h"
 #include "Session.h"
 
 using Poco::UUID;
