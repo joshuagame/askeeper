@@ -63,7 +63,7 @@ HTTPResponse::HTTPStatus ZimbraAuthenticator::authenticate(const string& usernam
     logger.information("performing Zimbra user authentication for user " + username);
     try {
 
-        HTTPSClientSession s(app.config().getString("zimbra.host"), (unsigned int)app.config().getInt("zimbra.port"), pClientContext);
+        HTTPSClientSession s(app.config().getString("zimbra.host"), (Poco::UInt16)app.config().getInt("zimbra.port"), pClientContext);
         std::string baseUrl = app.config().getString("zimbra.url");
         string url(replace(baseUrl, "$username$", username.c_str()));
         logger.debug("Zimbra authentication url: " + url);
@@ -80,7 +80,7 @@ HTTPResponse::HTTPStatus ZimbraAuthenticator::authenticate(const string& usernam
         logger.debug("sending authentication request to Zimbra");
         s.sendRequest(request);
         std::istream& rs = s.receiveResponse(zimbraResponse);
-        logger.debug("Zimbra authentication response status: " + zimbraResponse.getStatus());
+        logger.debug("Zimbra authentication response status: %d", zimbraResponse.getStatus());
 
         status = zimbraResponse.getStatus();
     } catch (Poco::Exception& e) {
