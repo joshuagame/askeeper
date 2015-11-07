@@ -36,7 +36,8 @@
 namespace askeeper {
 namespace server {
 
-std::unordered_map<std::string, Session> SessionsManager::sessions{};
+//std::unordered_map<std::string, Session> SessionsManager::sessions{};
+Poco::UniqueExpireCache<std::string, ExpiringSession> SessionsManager::sessions;
 
 Session SessionsManager::newSession()
 {
@@ -48,17 +49,12 @@ Session SessionsManager::newSession()
     logger.debug("UUID generated");
 
     Session session(uuid.toString());
+    ExpiringSession expiringSession(session, Poco::Util::Application::instance().config().getInt("session.expiration", 360000));
     logger.debug("Session started");
 
-    sessions.emplace(session.id(), session);
+    sessions.add(session.id(), expiringSession);
+    //sessions.emplace(session.id(), session);
     logger.debug("Session emplaced into the sessions map");
-
-//    std::unordered_map<std::string, Session>::iterator it = sessions.find(session.id());
-//    if (it != sessions.end()) {
-//        std::cout << "SESSION FOUND" << std::endl;
-//    } else {
-//        std::cout << "SESSION NOT FOUND" << std::endl;
-//    }
 
     return session;
 }

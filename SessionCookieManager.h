@@ -33,9 +33,11 @@
 #define ASKEEPER_SESSIONCOOKIECHECKER_H
 
 #include <string>
+#include <iostream>
 #include "Poco/Net/HTTPServerRequest.h"
 #include "Poco/Net/HTTPServerResponse.h"
 #include "Poco/Net/HTTPCookie.h"
+#include "Poco/Util/Application.h"
 
 using namespace Poco::Net;
 
@@ -45,7 +47,8 @@ namespace server {
 class SessionCookieManager {
 public:
     std::string getSessionIdFromCookie(HTTPServerRequest& request);
-    void setSessionCookie(HTTPServerResponse& response, const std::string& sessionId);
+    void setSessionCookie(HTTPServerResponse& response, const std::string& sessionId, bool remove = false);
+    void removeSessionCookie(HTTPServerResponse& response);
 
 protected:
     static const std::string SESSION_COOKIE_NAME;
@@ -55,28 +58,43 @@ protected:
 
 inline std::string SessionCookieManager::getSessionIdFromCookie(HTTPServerRequest& request)
 {
+    std::cout << "Getting session cookie" << std::endl;
     std::string sessionId = NOID;
     NameValueCollection cookies;
 
     // get cookies from request
     request.getCookies(cookies);
+    std::cout << "got cookies" << std::endl;
 
     // and search for ASKSESSION cookie to grab the sessionId
     Poco::Net::NameValueCollection::ConstIterator it = cookies.find(SESSION_COOKIE_NAME);
+    std::cout << "got it" << std::endl;
     if (it != cookies.end()) {
         sessionId = it->second;
+        std::cout << "cookie found" << std::endl;
     }
 
     return sessionId;
 }
 
-inline void SessionCookieManager::setSessionCookie(HTTPServerResponse& response, const std::string& sessionId)
+// TODO: set a way to enable browser session age for cookie
+inline void SessionCookieManager::setSessionCookie(HTTPServerResponse& response, const std::string& sessionId, bool remove)
 {
+    int sessionExpirationTime = Poco::Util::Application::instance().config().getInt("session.expiration", 360000);
+    int maxAge = remove ? 0 : (sessionExpirationTime > 1000 ? sessionExpirationTime / 1000 : 1);
+
     HTTPCookie cookie(SESSION_COOKIE_NAME, sessionId);
     cookie.setPath("/");
-    cookie.setMaxAge(3600); // 1 hour
+    cookie.setMaxAge(maxAge);
+
     response.addCookie(cookie);
 }
+
+inline void SessionCookieManager::removeSessionCookie(HTTPServerResponse& response)
+{
+    setSessionCookie(response, "", true);
+}
+
 
 }
 }

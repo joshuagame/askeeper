@@ -62,25 +62,35 @@ void SiginRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerRe
     //
     // check for sessionId from cookie in request
     std::string sessionId = getSessionIdFromCookie(request);
+    std::cout << "SESSIONID: " << sessionId << std::endl;
     if (sessionId == NOID) {
         logger.information("no sessionId from request: probably there is no ASKSESSION cookie in request");
     } else {
         // now check for the sessionId in the sessions map
-        Session theSession = SessionsManager::instance().getSession(sessionId);
-        if (sessionId == theSession.id()) {
-            logger.debug("found an active session for sessionId " + sessionId);
-        } else {
+        Session* theSession = SessionsManager::instance().getSession(sessionId);
+        logger.debug("*** got theSession");
+        if (theSession == nullptr) {
             logger.warning("no active session for sessionId " + sessionId + ", so ask for authentication");
+            logger.debug("***setting require auth");
             response.requireAuthentication("askeeper");
+            logger.debug("***setting content length to 0");
             response.setContentLength(0);
+            // remove cookie on client
+            logger.debug("***removing cookie");
+            setSessionCookie(response, "", true);
+
+            logger.debug("***Sending response");
             response.send();
+
+            return;
+        } else {
+            logger.debug("found an active session for sessionId " + sessionId);
+            response.setChunkedTransferEncoding(true);
+            response.setContentType("application/json");
+            std::ostream& ostr = response.send();
+            ostr << "{ \"status\": \"success\", \"message\": \"user authenticated by sessionId in ASKSESSION cookie\" }";
             return;
         }
-        response.setChunkedTransferEncoding(true);
-        response.setContentType("application/json");
-        std::ostream& ostr = response.send();
-        ostr << "{ \"status\": \"success\", \"message\": \"user authenticated by sessionId in ASKSESSION cookie\" }";
-        return;
     }
 
     //

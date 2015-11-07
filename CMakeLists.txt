@@ -11,12 +11,12 @@ add_executable(askeeper ${SOURCE_FILES})
 set(POCO_PREFIX      "/usr/local") # the directory containing "include" and "lib"
 set(POCO_INCLUDE_DIR "${POCO_PREFIX}/include")
 set(POCO_LIB_DIR     "${POCO_PREFIX}/lib")
-set(POCO_LIBS        "${POCO_LIB_DIR}/libPocoNet.dll.a"
-                     "${POCO_LIB_DIR}/libPocoNetSSL.dll.a"
-                     "${POCO_LIB_DIR}/libPocoUtil.dll.a"
-                     "${POCO_LIB_DIR}/libPocoJSON.dll.a"
-                     "${POCO_LIB_DIR}/libPocoXML.dll.a"
-                     "${POCO_LIB_DIR}/libPocoFoundation.dll.a"
+set(POCO_LIBS        "${POCO_LIB_DIR}/libPocoNet.dylib"
+                     "${POCO_LIB_DIR}/libPocoNetSSL.dylib"
+                     "${POCO_LIB_DIR}/libPocoUtil.dylib"
+                     "${POCO_LIB_DIR}/libPocoJSON.dylib"
+                     "${POCO_LIB_DIR}/libPocoXML.dylib"
+                     "${POCO_LIB_DIR}/libPocoFoundation.dylib"
                      "pthread")
 
 # set the include path for the app

@@ -56,28 +56,51 @@ using Poco::MD5Engine;
 namespace askeeper {
 namespace server {
 
+typedef Poco::ExpirationDecorator<Session> ExpiringSession;
+
 class SessionsManager {
-    SessionsManager() = delete;
-    SessionsManager(SessionsManager&) = delete;
-    void operator=(SessionsManager&) = delete;
+    //SessionsManager() = default;
+    //SessionsManager(SessionsManager&) = delete;
+    //void operator=(SessionsManager&) = delete;
+    SessionsManager() {}
+    SessionsManager(SessionsManager&) {}
+    void operator=(SessionsManager) {}
 
 public:
     static SessionsManager& instance()
     {
-        static SessionsManager* _instance{};
-        return *_instance;
+        static SessionsManager _instance;
+        return _instance;
     }
 
     Session newSession();
 
-    Session getSession(const std::string& sessionId)
+    Session* getSession(const std::string& sessionId)
     {
-        return sessions[sessionId];
+        Session* session{};
+        std::cout << "***getSession " << sessionId << std::endl;
+
+        Poco::SharedPtr<ExpiringSession> sessionPtr = sessions.get(sessionId);
+        if (sessionPtr.isNull()) {
+            std::cout << "***sessionPtr is null" << std::endl;
+            session = nullptr;
+            std::cout << "***session = nullptr" << std::endl;
+        } else {
+            session = &sessionPtr->value();
+            std::cout << "***session id " << session->id() << std::endl;
+        }
+
+        std::cout << "***returning session pointer" << std::endl;
+        return session;
     }
 
 private:
     ~SessionsManager() {}
-    static std::unordered_map<std::string, Session> sessions;
+    //static std::unordered_map<std::string, Session> sessions;
+
+
+    static Poco::UniqueExpireCache<std::string, ExpiringSession> sessions;
+
 
 };
 
